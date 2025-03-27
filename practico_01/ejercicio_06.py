@@ -88,8 +88,6 @@ def numeros_al_final_recursivo(lista: List[Union[float, str]]) -> List[Union[flo
     else:
         return [primero] + restoLista
     
-print(numeros_al_final_recursivo([3, "a", 1, "b", 10, "j"]))
-
 
 # NO MODIFICAR - INICIO
 if __name__ == "__main__":
