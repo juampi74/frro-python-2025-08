@@ -39,7 +39,7 @@ def es_vocal_if_in(letra: str) -> bool:
 
     vocales = ["a", "e", "i", "o", "u"]
 
-    if (letra in vocales):
+    if (str.casefold(letra) in vocales):
         return True
     else:
         return False
@@ -60,7 +60,7 @@ def es_vocal_in(letra: str) -> bool:
     
     vocales = ["a", "e", "i", "o", "u"]
 
-    return letra in vocales
+    return str.casefold(letra) in vocales
 
 
 # NO MODIFICAR - INICIO
