@@ -10,13 +10,12 @@ def numeros_al_final_basico(lista: List[Union[float, str]]) -> List[Union[float,
     numeros = []
     letras = []
     for x in lista:
-        if(isinstance(x, float)):
-            numeros.append(x)
-        else:
+        if(isinstance(x, str)):
             letras.append(x)
+        else:
+            numeros.append(x)
 
-    return numeros + letras
-
+    return letras + numeros
 
 # NO MODIFICAR - INICIO
 assert numeros_al_final_basico([3, "a", 1, "b", 10, "j"]) == ["a", "b", "j", 3, 1, 10]
@@ -29,12 +28,10 @@ assert numeros_al_final_basico([3, "a", 1, "b", 10, "j"]) == ["a", "b", "j", 3, 
 def numeros_al_final_comprension(lista: List[Union[float, str]]) -> List[Union[float, str]]:
     """Re-escribir utilizando comprensión de listas."""
     
-    numeros = [x for x in lista if isinstance(x, float)]
+    numeros = [x for x in lista if isinstance(x, (float, int))]
     letras = [x for x in lista if isinstance(x, str)]
 
     return letras + numeros
-
-
 
 # NO MODIFICAR - INICIO
 assert numeros_al_final_comprension([3, "a", 1, "b", 10, "j"]) == ["a", "b", "j", 3, 1, 10]
@@ -48,7 +45,7 @@ def numeros_al_final_sorted(lista: List[Union[float, str]]) -> List[Union[float,
     """Re-escribir utilizando la función sorted con una custom key.
     Referencia: https://docs.python.org/3/library/functions.html#sorted
     """
-    return sorted(lista, key=lambda x: isinstance(x, float))
+    return sorted(lista, key=lambda x: isinstance(x, (float, int)))
 
 
 # NO MODIFICAR - INICIO
@@ -63,7 +60,7 @@ def numeros_al_final_filter(lista: List[Union[float, str]]) -> List[Union[float,
     """CHALLENGE OPCIONAL - Re-escribir utilizando la función filter.
     Referencia: https://docs.python.org/3/library/functions.html#filter
     """
-    numeros = list(filter(lambda x: isinstance(x, float), lista))
+    numeros = list(filter(lambda x: isinstance(x, (float, int)), lista))
     letras = list(filter(lambda x: isinstance(x, str), lista))
 
     return letras + numeros
@@ -81,10 +78,16 @@ if __name__ == "__main__":
 def numeros_al_final_recursivo(lista: List[Union[float, str]]) -> List[Union[float, str]]:
     """CHALLENGE OPCIONAL - Re-escribir de forma recursiva."""
     if len(lista) == 0:
-        return "Lista vacía"
+        return []
     
-    return 
+    primero = lista[0]
+    restoLista = numeros_al_final_recursivo(lista[1:])
 
+    if isinstance(primero, (float, int)):
+        return restoLista + [primero] 
+    else:
+        return [primero] + restoLista
+    
 
 # NO MODIFICAR - INICIO
 if __name__ == "__main__":
