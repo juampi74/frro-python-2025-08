@@ -80,14 +80,13 @@ def numeros_al_final_recursivo(lista: List[Union[float, str]]) -> List[Union[flo
     if len(lista) == 0:
         return []
     
-    primero = lista[0]
-    restoLista = numeros_al_final_recursivo(lista[1:])
+    letras = numeros_al_final_recursivo([x for x in lista[1:] if isinstance(x, str)])
+    numeros = numeros_al_final_recursivo([x for x in lista[1:] if isinstance(x, (int, float))])
 
-    if isinstance(primero, (float, int)):
-        return restoLista + [primero] 
+    if isinstance(lista[0], str):
+        return [lista[0]] + letras + numeros
     else:
-        return [primero] + restoLista
-    
+        return letras + [lista[0]] + numeros
 
 # NO MODIFICAR - INICIO
 if __name__ == "__main__":
