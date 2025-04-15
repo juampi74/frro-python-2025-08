@@ -13,12 +13,12 @@ def suma_cubo_pares_for(numeros: Iterable[int]) -> int:
     cubos = []
     for numero in numeros:
         cubos.append(numero ** 3)
-    
+
     suma = 0
     for cubo in cubos:
         if cubo % 2 == 0:
             suma += cubo
-    
+
     return suma
 
 

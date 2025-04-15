@@ -10,12 +10,13 @@ def numeros_al_final_basico(lista: List[Union[float, str]]) -> List[Union[float,
     numeros = []
     letras = []
     for x in lista:
-        if(isinstance(x, str)):
+        if (isinstance(x, str)):
             letras.append(x)
         else:
             numeros.append(x)
 
     return letras + numeros
+
 
 # NO MODIFICAR - INICIO
 assert numeros_al_final_basico([3, "a", 1, "b", 10, "j"]) == ["a", "b", "j", 3, 1, 10]
@@ -27,11 +28,12 @@ assert numeros_al_final_basico([3, "a", 1, "b", 10, "j"]) == ["a", "b", "j", 3, 
 
 def numeros_al_final_comprension(lista: List[Union[float, str]]) -> List[Union[float, str]]:
     """Re-escribir utilizando comprensión de listas."""
-    
+
     numeros = [x for x in lista if isinstance(x, (float, int))]
     letras = [x for x in lista if isinstance(x, str)]
 
     return letras + numeros
+
 
 # NO MODIFICAR - INICIO
 assert numeros_al_final_comprension([3, "a", 1, "b", 10, "j"]) == ["a", "b", "j", 3, 1, 10]
@@ -79,7 +81,7 @@ def numeros_al_final_recursivo(lista: List[Union[float, str]]) -> List[Union[flo
     """CHALLENGE OPCIONAL - Re-escribir de forma recursiva."""
     if len(lista) == 0:
         return []
-    
+
     letras = numeros_al_final_recursivo([x for x in lista[1:] if isinstance(x, str)])
     numeros = numeros_al_final_recursivo([x for x in lista[1:] if isinstance(x, (int, float))])
 
@@ -87,6 +89,7 @@ def numeros_al_final_recursivo(lista: List[Union[float, str]]) -> List[Union[flo
         return [lista[0]] + letras + numeros
     else:
         return letras + [lista[0]] + numeros
+
 
 # NO MODIFICAR - INICIO
 if __name__ == "__main__":

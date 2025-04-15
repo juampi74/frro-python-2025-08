@@ -8,7 +8,7 @@ def es_vocal_if(letra: str) -> bool:
     Restricción: Utilizar un if para cada posibilidad con la función lower().
     Referencia: https://docs.python.org/3/library/stdtypes.html#string-methods
     """
-    
+
     if str.casefold(letra) == "a":
         return True
     if str.casefold(letra) == "e":
@@ -21,6 +21,7 @@ def es_vocal_if(letra: str) -> bool:
         return True
 
     return False
+
 
 # NO MODIFICAR - INICIO
 assert es_vocal_if("a")
@@ -57,7 +58,7 @@ assert es_vocal_if_in("A")
 
 def es_vocal_in(letra: str) -> bool:
     """Re-escribir utilizando el operador IN pero sin utilizar IF."""
-    
+
     vocales = ["a", "e", "i", "o", "u"]
 
     return str.casefold(letra) in vocales

@@ -11,7 +11,7 @@ def maximo_encadenado(a: float, b: float, c: float) -> float:
         return a
     elif (b >= a and b >= c):
         return b
-    else: 
+    else:
         return c
 
 
@@ -50,7 +50,7 @@ def maximo_arbitrario(*args) -> float:
     mayor = 0
 
     for i in args:
-        if(i > mayor):
+        if (i > mayor):
             mayor = i
 
     return mayor
@@ -69,9 +69,8 @@ assert maximo_arbitrario(24, 9, 18, 30) == 30
 
 def maximo_recursivo(*args) -> float:
     """Re-Escribir de forma recursiva."""
-    if(len(args) == 1):
+    if (len(args) == 1):
         return args[0]
-    
     return args[0] if args[0] > maximo_recursivo(*args[1:]) else maximo_recursivo(*args[1:])
 
 
