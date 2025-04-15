@@ -18,6 +18,7 @@ class Rectangulo:
             return 0
         return self.base * self.altura
 
+
 # NO MODIFICAR - INICIO
 
 # Test Constructor
