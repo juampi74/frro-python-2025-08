@@ -5,7 +5,7 @@ def sumatoria_basico(n: int) -> int:
     """Devuelve la suma de los números de 1 a N.
 
     Restricción: Utilizar un bucle for.
-    """   
+    """
     resultado = 0
 
     for i in range(1, n + 1):
