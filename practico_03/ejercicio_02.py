@@ -11,6 +11,16 @@ class Articulo:
     """
 
     # Completar
+    _last_id = 0
+
+    def __init__(self, nombre=None):
+        self.nombre = nombre
+        Articulo.aumentar_id()
+        self.id_ = Articulo._last_id
+
+    @classmethod
+    def aumentar_id(cls):
+        cls._last_id += 1
 
 
 # NO MODIFICAR - INICIO
