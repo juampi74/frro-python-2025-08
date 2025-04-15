@@ -22,9 +22,10 @@ class Persona:
         self.sexo = sexo
         self.peso = peso
         self.altura = altura
-    
+
     def es_mayor_edad(self):
         return self.edad >= 18
+
 
 # NO MODIFICAR - INICIO
 assert Persona("Juan", 18, "H", 85, 175.9).es_mayor_edad()
@@ -36,6 +37,7 @@ assert not Persona("Julia", 16, "M", 65, 162.4).es_mayor_edad()
 
 
 from dataclasses import dataclass
+
 
 @dataclass
 class Persona:
@@ -50,6 +52,7 @@ class Persona:
 
     def es_mayor_edad(self):
         return self.edad >= 18
+
 
 # NO MODIFICAR - INICIO
 assert Persona("Juan", 18, "H", 85, 175.9).es_mayor_edad()

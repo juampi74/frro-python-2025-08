@@ -21,9 +21,10 @@ class Perro(Animal):
     def __init__(self, edad: int = 0, raza: str = ""):
         super().__init__(edad)
         self.raza = raza
-    
+
     def descripcion(self) -> str:
-        return f"Soy un perro y {super().descripcion().lower()}"       
+        return f"Soy un perro y {super().descripcion().lower()}"
+
 
 # NO MODIFICAR - INICIO
 terrier = Perro(edad=8, raza="Yorkshire Terrier")
@@ -48,6 +49,7 @@ class Animal:
 
     def descripcion(self) -> str:
         return f"Tengo {self.edad} años"
+
 
 @dataclass
 class Perro(Animal):

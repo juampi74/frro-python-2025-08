@@ -28,6 +28,7 @@ class Article:
     def __str__(self) -> str:
         return self.name
 
+
 # NO MODIFICAR - INICIO
 class ShoppingCart:
     """Agregar los métodos que sean necesarios para que los test funcionen.
@@ -74,6 +75,7 @@ class ShoppingCart:
         return ShoppingCart(self.articles + other.articles)
 
 # NO MODIFICAR - INICIO
+
 
 manzana = Article("Manzana")
 pera = Article("Pera")
