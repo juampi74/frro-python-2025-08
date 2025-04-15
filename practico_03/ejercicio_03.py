@@ -16,7 +16,15 @@ class Persona:
     """
 
     # Completar
-
+    def __init__(self, nombre: str, edad: int, sexo: str, peso: float, altura: float):
+        self.nombre = nombre
+        self.edad = edad
+        self.sexo = sexo
+        self.peso = peso
+        self.altura = altura
+    
+    def es_mayor_edad(self):
+        return self.edad >= 18
 
 # NO MODIFICAR - INICIO
 assert Persona("Juan", 18, "H", 85, 175.9).es_mayor_edad()
@@ -34,7 +42,14 @@ class Persona:
     """Re-Escribir utilizando DataClasses"""
 
     # Completar
+    nombre: str
+    edad: int
+    sexo: str
+    peso: float
+    altura: float
 
+    def es_mayor_edad(self):
+        return self.edad >= 18
 
 # NO MODIFICAR - INICIO
 assert Persona("Juan", 18, "H", 85, 175.9).es_mayor_edad()
