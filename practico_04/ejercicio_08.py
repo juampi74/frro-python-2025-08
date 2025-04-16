@@ -1,22 +1,23 @@
 """Base de datos SQL - Listar"""
 
 import datetime
-
-from practico_04.ejercicio_02 import agregar_persona
-from practico_04.ejercicio_06 import reset_tabla
-from practico_04.ejercicio_07 import agregar_peso
+import sqlite3
+from ejercicio_02 import agregar_persona
+from ejercicio_04 import buscar_persona
+from ejercicio_06 import reset_tabla
+from ejercicio_07 import agregar_peso
 
 
 def listar_pesos(id_persona):
-    """Implementar la funcion listar_pesos, que devuelva el historial de pesos 
+    """Implementar la funcion listar_pesos, que devuelva el historial de pesos
     para una persona dada.
 
     Debe validar:
-    - Que el ID de la persona ingresada existe (reutilizando las funciones ya 
-     mplementadas).
+    - Que el ID de la persona ingresada existe (reutilizando las funciones ya
+    implementadas).
 
     Debe devolver:
-    - Lista de (fecha, peso), donde fecha esta representado por el siguiente 
+    - Lista de (fecha, peso), donde fecha esta representado por el siguiente
     formato: AAAA-MM-DD.
 
     Ejemplo:
@@ -30,7 +31,27 @@ def listar_pesos(id_persona):
 
     - False en caso de no cumplir con alguna validacion.
     """
-    return []
+    conn = sqlite3.connect('Practico04_DB.db')
+    cursor = conn.cursor()
+
+    persona = buscar_persona(id_persona)
+
+    if not persona:
+        conn.close()
+        return False
+
+    cursor.execute('''
+        SELECT Fecha, Peso
+        FROM PersonaPeso
+        WHERE IdPersona = ?
+    ''', (id_persona,))
+
+    pesos = cursor.fetchall()
+    conn.close()
+
+    pesos_formateados = [(fecha.split(' ')[0], peso) for fecha, peso in pesos]
+
+    return pesos_formateados
 
 
 # NO MODIFICAR - INICIO
@@ -46,7 +67,7 @@ def pruebas():
     ]
     assert pesos_juan == pesos_esperados
     # id incorrecto
-    assert listar_pesos(200) == False
+    assert listar_pesos(200) is False
 
 
 if __name__ == '__main__':
