@@ -33,6 +33,7 @@ def actualizar_persona(id_persona, nombre, nacimiento, dni, altura):
     conn.close()
     return False
 
+
 # NO MODIFICAR - INICIO
 @reset_tabla
 def pruebas():
@@ -40,6 +41,7 @@ def pruebas():
     actualizar_persona(id_juan, 'juan carlos perez', datetime.datetime(1988, 4, 16), 32165497, 181)
     assert buscar_persona(id_juan) == (1, 'juan carlos perez', datetime.datetime(1988, 4, 16), 32165497, 181)
     assert actualizar_persona(123, 'nadie', datetime.datetime(1988, 4, 16), 12312312, 181) is False
+
 
 if __name__ == '__main__':
     pruebas()

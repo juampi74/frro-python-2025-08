@@ -2,6 +2,7 @@
 
 import sqlite3
 
+
 def crear_tabla():
     """Implementar la funcion crear_tabla, que cree una tabla Persona con:
         - IdPersona: Int() (autoincremental)
@@ -29,7 +30,7 @@ def crear_tabla():
 
 
 def borrar_tabla():
-    """Implementar la funcion borrar_tabla, que borra la tabla creada 
+    """Implementar la funcion borrar_tabla, que borra la tabla creada
     anteriormente."""
     conn = sqlite3.connect('Practico04_DB.db')
     cursor = conn.cursor()

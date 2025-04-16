@@ -28,7 +28,7 @@ def crear_tabla_peso():
 
 
 def borrar_tabla_peso():
-    """Implementar la funcion borrar_tabla, que borra la tabla creada 
+    """Implementar la funcion borrar_tabla, que borra la tabla creada
     anteriormente."""
     conn = sqlite3.connect('Practico04_DB.db')
     cursor = conn.cursor()

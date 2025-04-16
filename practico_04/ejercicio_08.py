@@ -9,15 +9,15 @@ from ejercicio_07 import agregar_peso
 
 
 def listar_pesos(id_persona):
-    """Implementar la funcion listar_pesos, que devuelva el historial de pesos 
+    """Implementar la funcion listar_pesos, que devuelva el historial de pesos
     para una persona dada.
 
     Debe validar:
-    - Que el ID de la persona ingresada existe (reutilizando las funciones ya 
+    - Que el ID de la persona ingresada existe (reutilizando las funciones ya
     implementadas).
 
     Debe devolver:
-    - Lista de (fecha, peso), donde fecha esta representado por el siguiente 
+    - Lista de (fecha, peso), donde fecha esta representado por el siguiente
     formato: AAAA-MM-DD.
 
     Ejemplo:
@@ -50,7 +50,7 @@ def listar_pesos(id_persona):
     conn.close()
 
     pesos_formateados = [(fecha.split(' ')[0], peso) for fecha, peso in pesos]
-    
+
     return pesos_formateados
 
 
@@ -67,7 +67,7 @@ def pruebas():
     ]
     assert pesos_juan == pesos_esperados
     # id incorrecto
-    assert listar_pesos(200) == False
+    assert listar_pesos(200) is False
 
 
 if __name__ == '__main__':
