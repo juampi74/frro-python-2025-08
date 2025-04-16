@@ -13,13 +13,17 @@ def borrar_persona(id_persona):
     conn = sqlite3.connect('Practico04_DB.db')
     cursor = conn.cursor()
 
-    # Verificar si el registro existe
-    cursor.execute('''SELECT * FROM Persona WHERE IdPersona = ?''', (id_persona,))
+    cursor.execute('''
+        SELECT * FROM Persona
+        WHERE IdPersona = ?
+    ''', (id_persona,))
     persona = cursor.fetchone()
 
     if persona:
-        # Borrar el registro
-        cursor.execute('''DELETE FROM Persona WHERE IdPersona = ?''', (id_persona,))
+        cursor.execute('''
+            DELETE FROM Persona
+            WHERE IdPersona = ?
+        ''', (id_persona,))
         conn.commit()
         conn.close()
         return True
