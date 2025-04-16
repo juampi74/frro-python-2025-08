@@ -8,7 +8,7 @@ from ejercicio_06 import reset_tabla
 
 
 def agregar_peso(id_persona, fecha, peso):
-    """Implementar la funcion agregar_peso, que inserte un registro en la tabla 
+    """Implementar la funcion agregar_peso, que inserte un registro en la tabla
     PersonaPeso.
 
     Debe validar:
