@@ -14,12 +14,16 @@ def buscar_persona(id_persona):
     conn = sqlite3.connect('Practico04_DB.db')
     cursor = conn.cursor()
 
-    cursor.execute('''SELECT * FROM Persona WHERE IdPersona = ?''', (id_persona,))
+    cursor.execute('''
+        SELECT * FROM Persona
+        WHERE IdPersona = ?
+    ''', (id_persona,))
     persona = cursor.fetchone()
 
     if persona:
-        print(persona)
-        return persona
+        id, nombre, nacimiento_str, dni, altura = persona
+        nacimiento = datetime.datetime.fromisoformat(nacimiento_str)
+        return (id, nombre, nacimiento, dni, altura)
     else:
         return False
 
