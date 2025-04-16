@@ -15,6 +15,7 @@ def crear_tabla_peso():
 
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS PersonaPeso (
+            IdPeso INTEGER PRIMARY KEY AUTOINCREMENT,
             IdPersona INTEGER,
             Fecha DATE,
             Peso INTEGER,
