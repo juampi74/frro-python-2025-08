@@ -18,18 +18,30 @@ poligono_gdf = gpd.GeoDataFrame(index=[0], geometry=[mi_poligono], crs="EPSG:432
 # Leer los departamentos desde el shapefile del IGN
 departamentos = gpd.read_file("departamentoPolygon.shp")
 
+## Leer las provincias desde el shapefile del IGN
+provincias = gpd.read_file("provinciaPolygon.shp")
+
 # Asegurarse que ambos estén en el mismo sistema de coordenadas (WGS84 - EPSG:4326)
 departamentos = departamentos.to_crs(epsg=4326)
+provincias = provincias.to_crs(epsg=4326)
 
 # Hacer la intersección: encontrar qué departamentos intersectan con tu polígono
 interseccion = gpd.overlay(departamentos, poligono_gdf, how="intersection")
+interseccion2 = gpd.overlay(provincias, poligono_gdf, how="intersection")
 
-##print("----------------------------------")
-##print(departamentos.columns)
-##print(departamentos[["gid", "objeto", "fna", "gna", "nam", "in1"]].head(10))
-# Mostrar resultados
+# Mostrar resultados (fna es el nombre formal y nam es el nombre solamente)
 if not interseccion.empty:
     for _, row in interseccion.iterrows():
+        print(
+            f"Departamento: {row['fna']}, Departamento: {row['nam']}"
+        )  ##ver porque a veces no sale la provincia
+else:
+    print("El polígono no intersecta con ningún departamento.")
+
+
+# Mostrar resultados
+if not interseccion2.empty:
+    for _, row in interseccion2.iterrows():
         print(
             f"Provincia: {row['fna']}, Departamento: {row['nam']}"
         )  ##ver porque a veces no sale la provincia
