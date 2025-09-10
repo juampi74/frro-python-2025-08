@@ -29,21 +29,14 @@ provincias = provincias.to_crs(epsg=4326)
 interseccion = gpd.overlay(departamentos, poligono_gdf, how="intersection")
 interseccion2 = gpd.overlay(provincias, poligono_gdf, how="intersection")
 
-# Mostrar resultados (fna es el nombre formal y nam es el nombre solamente)
-if not interseccion.empty:
+if not (interseccion.empty and interseccion.empty):
+
     for _, row in interseccion.iterrows():
-        print(
-            f"Departamento: {row['fna']}, Departamento: {row['nam']}"
-        )  ##ver porque a veces no sale la provincia
-else:
-    print("El polígono no intersecta con ningún departamento.")
+        departamento = row["fna"]
 
-
-# Mostrar resultados
-if not interseccion2.empty:
     for _, row in interseccion2.iterrows():
-        print(
-            f"Provincia: {row['fna']}, Departamento: {row['nam']}"
-        )  ##ver porque a veces no sale la provincia
+        provincia = row["fna"]
+
+    print(f"{provincia}, {departamento}")
 else:
     print("El polígono no intersecta con ningún departamento.")
