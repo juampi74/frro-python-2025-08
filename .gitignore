@@ -87,6 +87,26 @@ celerybeat-schedule
 venv/
 ENV/
 
+venv
+venv3_10
+
+_pycache_
+__pycache__
+*/__pycache__
+**/__pycache__
+
+_init_
+__init__
+*/__init__
+**/__init__
+
+.vscode
+*/.vscode
+**/.vscode
+catboost_info
+*/catboost_info
+**/catboost_info
+
 # Spyder project settings
 .spyderproject
 .spyproject

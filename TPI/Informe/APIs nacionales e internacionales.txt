@@ -1,0 +1,76 @@
+### 🌍 **APIs Internacionales**
+
+1. **FAO API (FAOSTAT)**
+
+   * Proporciona estadísticas agrícolas globales.
+   * URL: [https://www.fao.org/faostat/en/#data](https://www.fao.org/faostat/en/#data)
+   * Datos: Producción de cultivos, uso de la tierra, comercio agrícola, etc.
+   * Acceso: Gratuito (requiere registro para uso avanzado).
+
+2. **NASA Harvest (Agricultural Monitoring)**
+
+   * Datos satelitales para monitoreo agrícola.
+   * URL: [https://nasaharvest.org](https://nasaharvest.org)
+   * Acceso a través de APIs de la NASA como **MODIS**, **Landsat**, etc.
+
+3. **OpenWeather Agri API**
+
+   * Clima, humedad del suelo, temperatura, NDVI y más para agricultura.
+   * URL: [https://openweathermap.org/api/agro](https://openweathermap.org/api/agro)
+   * Acceso: Plan gratuito limitado, versiones pagas disponibles.
+
+4. **Agromonitoring API**
+
+   * Datos satelitales (NDVI, EVI, humedad, clima) para agricultura de precisión.
+   * URL: [https://agromonitoring.com](https://agromonitoring.com)
+   * Acceso: Gratuito con límites, opciones pagas.
+
+5. **OneSoil API**
+
+   * Análisis de campos agrícolas, tipo de cultivo, rotaciones.
+   * URL: [https://onesoil.ai](https://onesoil.ai)
+   * Nota: API no pública, pero datos disponibles vía descarga o contacto.
+
+6. **Global Open Data for Agriculture and Nutrition (GODAN)**
+
+   * No es una API directa, pero concentra fuentes de datos abiertos agrícolas.
+   * URL: [https://www.godan.info/](https://www.godan.info/)
+
+---
+
+### 🇦🇷 **APIs de Agricultura en Argentina**
+
+1. **INTA (Instituto Nacional de Tecnología Agropecuaria)**
+
+   * Algunos datos accesibles desde su plataforma web.
+   * URL: [https://datos.inta.gob.ar](https://datos.inta.gob.ar)
+   * API: No muy desarrollada, pero algunos datasets están en formato reutilizable (CSV, GeoJSON).
+
+2. **Sistema de Información sobre Sequías para el Sur de Sudamérica (SISSA)**
+
+   * Datos sobre sequías, humedad del suelo, índices agroclimáticos.
+   * URL: [https://sissa.crc-sas.org/](https://sissa.crc-sas.org/)
+   * No posee API directa, pero muchos datos están abiertos.
+
+3. **Servicio Meteorológico Nacional (SMN Argentina)**
+
+   * Datos meteorológicos útiles para el agro.
+   * URL: [https://smn.gob.ar](https://smn.gob.ar)
+   * Algunos endpoints API disponibles: [https://hcdn.gob.ar/diputados/omolina/documentos/proyectos/4473-D-2021.pdf](https://hcdn.gob.ar/diputados/omolina/documentos/proyectos/4473-D-2021.pdf)
+
+4. **Ministerio de Agricultura, Ganadería y Pesca**
+
+   * Datos sobre producción agrícola, campañas, exportaciones, etc.
+   * URL: [https://datos.magyp.gob.ar/](https://datos.magyp.gob.ar/)
+   * Algunos datasets descargables, no todos con API formal.
+
+---
+
+### 🧪 Extras útiles
+
+* **API REST de Earth Engine (Google Earth Engine)**
+
+  * Acceso a índices de vegetación, humedad, temperatura, etc.
+  * Requiere conocimiento en procesamiento geoespacial.
+  * URL: [https://developers.google.com/earth-engine](https://developers.google.com/earth-engine)
+

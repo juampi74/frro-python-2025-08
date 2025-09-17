@@ -1,0 +1,19 @@
+"ubicación";"tipo_de_acuifero";"profundidad_del_agua_en_metros";"caudal_en_m3_hora";"salinidad_en_mg_l";"año_relevamiento"
+"Valle Inferior Rio San Francisco";"Confinado";"140";"130";"200";"1991"
+"Cono tucumano";"Semi Confinado";"60";"150";"500";"1991"
+"Embalse Rio Hondo";"Confinado";"60";"300";"200";"1991"
+"Valle Santa Maria";"Libre";"50";"150";"200";"1991"
+"Valle Santa Maria";"Semi Confinado";"50";"150";"200";"1991"
+"Valle de Catamarca";"Libre";"30";"150";"300";"1991"
+"Valle de Catamarca";"Semi Confinado";"30";"150";"300";"1991"
+"Sierra de Cordoba";"Semi Confinado";"100";"70";"1500";"1991"
+"Valle de Conlara";"Semi Confinado";"50";"200";"1600";"1991"
+"Abanico del Rio San Juan";"Cautivo";"200";"150";"700";"1991"
+"Abanico Rios Mendoza y Tunuyan";"Semi Confinado";"90";"110";"1200";"1991"
+"Abanico Rios Mendoza y Tunuyan";"Confinado";"90";"110";"1200";"1991"
+"Abanico Rio Diamante y Atuel";"Semi Confinado";"80";"150";"1800";"1991"
+"Abanico Rio Diamante y Atuel";"Confinado";"80";"150";"1800";"1991"
+"Valle Rio Tunuyan";"Semi Confinado";"80";"120";"600";"1991"
+"Cuenca Paranaense";"Semi Confinado";"40";"60";"600";"1991"
+"Noroeste de Corrientes";"Semi Confinado";"10";"40";"200";"1991"
+"Bahia Blanca";"Confinado";"700";"330";"1000";"1991"
