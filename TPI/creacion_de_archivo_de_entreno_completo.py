@@ -1,7 +1,4 @@
 import pandas as pd
-from keras.models import Sequential
-from keras.layers import LSTM, Dense, Dropout, Input
-from keras.optimizers import Adam
 from pathlib import Path
 import sys, os
 from shapely.geometry import MultiPoint
@@ -13,20 +10,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".
 #from Recuperacion_de_datos.Clima.Recupero_clima_NASA_Mensual import obtener_datos_nasa_power, procesar_datos_mensuales
 from Recuperacion_de_datos.Clima.Recupero_clima_NASA_Mensual import main as recupero_datos_clima_mensual
 from Mapa.GIS.departamento import encontrar_departamento as transformo_coord_a_depto
-
-
-# -----------------------------
-# CREACIÓN DEL MODELO LSTM
-# -----------------------------
-def build_lstm_model(input_shape):
-    model = Sequential()
-    model.add(Input(shape=input_shape))
-    model.add(LSTM(128, return_sequences=False))
-    model.add(Dropout(0.3))
-    model.add(Dense(64, activation='relu'))
-    model.add(Dense(1, activation='linear'))  # Producción en kg
-    model.compile(optimizer=Adam(learning_rate=0.001), loss='mse', metrics=['mae'])
-    return model
 
 
 # -----------------------------
@@ -156,13 +139,6 @@ def main():
     n_meses = 14
 
     df_final = agregar_clima_por_departamento(df_suelo_semillas, n_meses)
-
-    '''df_final = pd.merge(
-        df_semillas_con_clima,
-        df_suelo_promedio,
-        on='departamento_nombre',
-        how='inner'
-    )'''
 
     df_final["cultivo_nombre"] = df_final["cultivo_nombre"].str.strip().str.lower()
 
