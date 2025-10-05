@@ -12,7 +12,7 @@ import sys
 # FUNCIONES AUXILIARES
 # --------------------------------------
 
-def entrenar_lstm_y_gbr(latitud, longitud, departamento):
+'''def entrenar_lstm_y_gbr(latitud, longitud, departamento):
     """Entrena LSTM y modelos GBR si no existen"""
     import pandas as pd
     from Pred_Clima.pred_temp import train_LSTM_temp
@@ -38,7 +38,7 @@ def entrenar_lstm_y_gbr(latitud, longitud, departamento):
     train_GBR_precip(clima_file)
     print("Entrenando GBR de viento...")
     train_GBR_viento_ms(clima_file)
-    print("Finalizó entrenamiento LSTM/GBR\n")
+    print("Finalizó entrenamiento LSTM/GBR\n")'''
 
 
 def crear_archivos_entreno():
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     metros_cuadrados = app.area_ha
 
     # Entrenamiento LSTM + GBR
-    entrenar_lstm_y_gbr(latitud, longitud, departamento)
+    '''entrenar_lstm_y_gbr(latitud, longitud, departamento)'''
 
     # Crear archivos de entrenamiento
     crear_archivos_entreno()

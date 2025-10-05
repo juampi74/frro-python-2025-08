@@ -1,6 +1,4 @@
 import random
-import os
-import sys
 import matplotlib.pyplot as plt
 import pandas as pd
 import squarify
@@ -27,16 +25,6 @@ def pred_toneladas(totalha, depto, lon, lat):
     toneladas = red_neuronal(individuo, depto, lon, lat)
     return toneladas
 
-def obtener_precios():
-    # Recupero precios de la tonelada de semilla
-    from Recuperacion_de_datos.Semillas.recuperar_precio_tonelada import recuperar_precios
-    #df_precios = pd.read_csv("Recuperacion_de_datos/Semillas/Archivos generados/precios_por_tonelada.csv")
-    lista_precios = recuperar_precios()
-    #df_precios = df_precios.tail(7)
-    lista_precios_hoy = [fila[1:] for fila in lista_precios]
-    precios_dict = dict(lista_precios_hoy)
-    return precios_dict
-
 
 def completoCromosoma(maximo, cantidad_genes=7):
     cromosoma = [random.random() for _ in range(cantidad_genes)]
@@ -54,28 +42,19 @@ def generarPoblacion(cantidadCromosomas, cantidadGenes, maximo):
 
 #Funcion Objetivo original
 
-def funcionObjetivo(x, precio):
+def funcionObjetivo(x):
     # Pasa por la red neuronal
-    obj = x * precio  
+    obj = x  
     return obj
     
 ## calcular FO MODIF (TARDA MENOS)
 def calculadorFuncionObjetivo(poblacion, toneladas, area): 
     objetivos = []
 
-    # Recupero precios de la tonelada de semilla
-    from Recuperacion_de_datos.Semillas.recuperar_precio_tonelada import recuperar_precios
-    #df_precios = pd.read_csv("Recuperacion_de_datos/Semillas/Archivos generados/precios_por_tonelada.csv")
-    lista_precios = recuperar_precios()
-    #df_precios = df_precios.tail(7)
-    lista_precios_hoy = [fila[1:] for fila in lista_precios]
-    precios_dict = dict(lista_precios_hoy)
-
     for individuo in poblacion:
         for idx, semilla in enumerate(SEMILLAS):
             cantidad_toneladas = ((individuo[idx]/area) * toneladas[idx])
-            precio = float(precios_dict.get(semilla))
-            obj = funcionObjetivo(cantidad_toneladas, precio)
+            obj = funcionObjetivo(cantidad_toneladas)
         objetivos.append(obj)
     return objetivos
 
@@ -109,22 +88,7 @@ def red_neuronal(individuo, depto, lon, lat):
 
     df_final = pd.DataFrame(filas)
 
-    cols = ['cultivo_nombre', 'anio', 'organic_carbon', 'ph', 'clay', 'silt', 'sand', 
-                    'temperatura_media_C_1', 'temperatura_media_C_2', 'temperatura_media_C_3', 'temperatura_media_C_4', 
-                    'temperatura_media_C_5', 'temperatura_media_C_6', 'temperatura_media_C_7', 'temperatura_media_C_8', 
-                    'temperatura_media_C_9', 'temperatura_media_C_10', 'temperatura_media_C_11', 'temperatura_media_C_12', 
-                    'temperatura_media_C_13', 'temperatura_media_C_14', 'humedad_relativa_%_1', 'humedad_relativa_%_2', 
-                    'humedad_relativa_%_3', 'humedad_relativa_%_4', 'humedad_relativa_%_5', 'humedad_relativa_%_6', 
-                    'humedad_relativa_%_7', 'humedad_relativa_%_8', 'humedad_relativa_%_9', 'humedad_relativa_%_10', 
-                    'humedad_relativa_%_11', 'humedad_relativa_%_12', 'humedad_relativa_%_13', 'humedad_relativa_%_14', 
-                    'velocidad_viento_m_s_1', 'velocidad_viento_m_s_2', 'velocidad_viento_m_s_3', 'velocidad_viento_m_s_4', 
-                    'velocidad_viento_m_s_5', 'velocidad_viento_m_s_6', 'velocidad_viento_m_s_7', 'velocidad_viento_m_s_8', 
-                    'velocidad_viento_m_s_9', 'velocidad_viento_m_s_10', 'velocidad_viento_m_s_11', 'velocidad_viento_m_s_12', 
-                    'velocidad_viento_m_s_13', 'velocidad_viento_m_s_14', 'precipitacion_mm_mes_1', 'precipitacion_mm_mes_2', 
-                    'precipitacion_mm_mes_3', 'precipitacion_mm_mes_4', 'precipitacion_mm_mes_5', 'precipitacion_mm_mes_6', 
-                    'precipitacion_mm_mes_7', 'precipitacion_mm_mes_8', 'precipitacion_mm_mes_9', 'precipitacion_mm_mes_10', 
-                    'precipitacion_mm_mes_11', 'precipitacion_mm_mes_12', 'precipitacion_mm_mes_13', 'precipitacion_mm_mes_14', 
-                    'superficie_sembrada_ha']
+    cols = ['cultivo_nombre', 'anio', 'organic_carbon', 'ph', 'clay', 'silt', 'sand', 'phase' 'superficie_sembrada_ha']
     df_final = df_final[cols]
 
     predicciones_toneladas = utilizar_GBM(df_final)
@@ -140,7 +104,7 @@ def calculadorFitness(objetivos):
     return fitness
 
 # metodo correccion original
-def metodo_correccion(individuo, precios, toneladas, area_ha):
+def metodo_correccion(individuo, toneladas, area_ha):
     cultivos = sum(1 for x in individuo if x != 0)
     if cultivos > 2:
         total = 0
@@ -287,8 +251,7 @@ def ciclos_con_elitismo(depto, lat, lon, area_ha, ciclos, prob_crossover, prob_m
 
         if correccion:
             index = fit.index(fit_ordenados[-1])
-            precios = obtener_precios()
-            pob[index] = metodo_correccion(pob[index], precios, toneladas, area_ha)
+            pob[index] = metodo_correccion(pob[index], toneladas, area_ha)
         
         fo = calculadorFuncionObjetivo(pob, toneladas, area_ha)
         fit = calculadorFitness(fo)
@@ -363,8 +326,7 @@ def ciclos_sin_elitismo(depto, lat, lon, area_ha, ciclos, prob_crossover, prob_m
         if correccion:
             fit_ordenados = sorted(fit, reverse=True)
             index = fit.index(fit_ordenados[-1])
-            precios = obtener_precios()
-            pob[index] = metodo_correccion(pob[index], precios, toneladas, area_ha)
+            pob[index] = metodo_correccion(pob[index], toneladas, area_ha)
         
         pob = mutacionSwap(pob, prob_mutacion)
         fo = calculadorFuncionObjetivo(pob, toneladas, area_ha)
