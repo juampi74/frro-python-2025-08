@@ -58,7 +58,7 @@ def entrenar_y_devolver_modelo(head_cant = 0):
     df_convertido = limpiar_df(df_convertido)
 
     df_train, df_test = np.split(df_convertido, [int(0.8*len(df_convertido))])
-
+    # Incluir el depto con un diccionario
     X_train = df_train[['cultivo_nombre', 'anio', 'organic_carbon', 'ph', 'clay', 'silt', 'sand', 
                     'temperatura_media_C_1', 'temperatura_media_C_2', 'temperatura_media_C_3', 'temperatura_media_C_4', 
                     'temperatura_media_C_5', 'temperatura_media_C_6', 'temperatura_media_C_7', 'temperatura_media_C_8', 
