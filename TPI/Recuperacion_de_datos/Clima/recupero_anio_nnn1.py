@@ -5,17 +5,11 @@ import pandas as pd
 import numpy as np
 import requests
 
-'''
-Este script genera:
-1) enso_years.csv con la fase ENSO (Niño/Niña/Neutral) por año calendario + columna Nino (1/0/-1).
-2) phase_trimestral.csv con la fase por trimestre (episodio) + columna Nino (1/0/-1).
-La clasificación se basa en ONI (NOAA, región Niño 3.4) y en la regla de episodio (≥5 trimestres consecutivos con |ONI| ≥ 0.5).
-'''
-
 PSL_ONI = "https://psl.noaa.gov/data/correlation/oni.data"
 
 SEASONS = ["DJF","JFM","FMA","MAM","AMJ","MJJ","JJA","JAS","ASO","SON","OND","NDJ"]
 SEASON_ORDER = {s:i for i,s in enumerate(SEASONS)}
+SEASON_NUM = {s: i+1 for i, s in enumerate(SEASONS)}  # DJF=1, ..., NDJ=12
 
 def _try_float(x):
     try:
@@ -111,7 +105,9 @@ def main():
     )
     tri["season_ord"] = tri["season"].map(SEASON_ORDER)
     tri = tri.sort_values(["year","season_ord"]).drop(columns="season_ord")
+    tri["trimester"] = tri["season"].map(SEASON_NUM).astype("int8")  # <-- nueva columna entera
     tri["Nino"] = tri["phase"].map({"Nino":1, "Neutral":0, "Nina":-1}).astype("int8")
+    tri = tri[["year","season","trimester","phase","Nino"]]
     tri.to_csv(f"{out_dir}/phase_trimestral.csv", index=False, encoding="utf-8")
 
     # Logs de verificación rápida
