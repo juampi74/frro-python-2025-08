@@ -1,160 +1,141 @@
-import pandas as pd
-from sklearn.ensemble import GradientBoostingRegressor
-from sklearn import tree
-from sklearn.model_selection import GridSearchCV
-import numpy as np
-import pandas as pd
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import KFold
-import matplotlib.pyplot as plt
-from tqdm import tqdm
-import numpy as np
+
+import os
 import joblib
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.model_selection import KFold, cross_val_score
 
-def limpiar_df(df: pd.DataFrame) -> pd.DataFrame:
-    # Definimos los valores a considerar como "inválidos"
-    invalid_values = ["SD", "sin datos", "", " ", "null", "NULL", "NaN", "nan", None]
+MODEL_PATH = "model/model_gbr_phase.pkl"
 
-    # Reemplazamos esos valores por NaN
-    df_limpio = df.replace(invalid_values, pd.NA)
-
-    # Eliminamos filas con al menos un NaN
-    df_limpio = df_limpio.dropna(how="any")
-
-    return df_limpio
-
-def guardar_modelo(modelo, ruta="model/modelo_gbm_precip.pkl"):
-    joblib.dump(modelo, ruta)
-    print(f"Modelo guardado en {ruta}")
-
-def separar_fecha(df: pd.DataFrame) -> pd.DataFrame:
+# ---------------- Helpers ----------------
+def season_anchor_datetime(df: pd.DataFrame) -> pd.Series:
     """
-    Reemplaza la columna 'fecha' (formato YYYY-MM-DD)
-    por dos columnas: 'anio' y 'mes'.
+    Construye una fecha representativa por fila usando (year, trimester).
+    Ancla en el mes FINAL del trimestre (DJF→feb, ..., NDJ→ene del año sig.).
     """
-    # Convertir a datetime
-    df['fecha'] = pd.to_datetime(df['fecha'], format='%Y-%m-%d')
+    months_end = {1:2, 2:3, 3:4, 4:5, 5:6, 6:7, 7:8, 8:9, 9:10, 10:11, 11:12, 12:1}
+    m = df["trimester"].astype(int).map(months_end)
+    y = df["year"].astype(int) + (df["trimester"].astype(int) == 12).astype(int)
+    return pd.to_datetime({'year': y, 'month': m, 'day': 1})
 
-    # Crear nuevas columnas
-    df['anio'] = df['fecha'].dt.year
-    df['mes'] = df['fecha'].dt.month
+def discretize_nino(x: np.ndarray) -> np.ndarray:
+    """Redondea y satura las predicciones continuas a {-1,0,1}."""
+    x = np.round(x).astype(int)
+    x = np.clip(x, -1, 1)
+    return x
 
-    # Eliminar la columna original
-    df = df.drop(columns=['fecha'])
+def avanzar_trimestre(year: int, trimester: int):
+    """Devuelve (year_next, trimester_next) al avanzar un trimestre."""
+    t2 = 1 + (trimester % 12)
+    y2 = year + (1 if t2 == 1 else 0)
+    return y2, t2
 
-    return df
+# ---------------- Core ----------------
+def preparar_datos(path_csv: str):
+    df = pd.read_csv(path_csv)
+    # Orden por año y trimestre por las dudas
+    df = df.sort_values(["year", "trimester"]).reset_index(drop=True)
 
+    # Objetivo: predecir Nino del próximo trimestre
+    df["Nino_next"] = df["Nino"].shift(-1)
+    df_model = df.dropna(subset=["Nino_next"]).copy()
 
-def entrenar_y_devolver_modelo(clima_file, head_cant=None):
-    # DATA PREPARATION
-    df = pd.read_csv(clima_file)
+    # Conjunto de entrada (como pediste): year, trimester, Nino (del trimestre actual)
+    X = df_model[["year", "trimester", "Nino"]].astype(float).values
+    y = df_model["Nino_next"].astype(float).values
 
-    if head_cant is not None:
-        df = df.head(head_cant)  # Usar solo las primeras head_cant filas para pruebas rápidas
+    return df_model, X, y
 
-    df_convertido = limpiar_df(df)
-    df_convertido = separar_fecha(df_convertido)
+def entrenar_modelo_phase(path_csv: str, n_splits=5):
+    os.makedirs("model", exist_ok=True)
 
-    # Crear columna lag: precipitaciones del mes anterior
-    df_convertido['precip_lag1'] = df_convertido['precipitacion_mm_mes'].shift(1)
+    df, X, y = preparar_datos(path_csv)
 
-    # Eliminar la primera fila (porque lag1 queda NaN en el inicio)
-    df_convertido = df_convertido.dropna()
+    # Split simple temporal (80/20) respetando orden
+    split = int(0.8 * len(df))
+    X_train, y_train = X[:split], y[:split]
+    X_test,  y_test  = X[split:], y[split:]
 
-    # Dividir train / test
-    df_train, df_test = np.split(df_convertido, [int(0.8*len(df_convertido))])
-
-    # Features incluyen año, mes y precipitaciones del mes anterior
-    X_train = df_train[['anio', 'mes', 'precip_lag1']]
-    X_test = df_test[['anio', 'mes', 'precip_lag1']]
-
-    y_train = df_train['precipitacion_mm_mes']
-    y_test = df_test['precipitacion_mm_mes']
-
-    # CROSSVALIDATION
-    crossvalidation = KFold(n_splits=5, shuffle=True, random_state=1)
-
-    GBR2 = GradientBoostingRegressor(
-        n_estimators=700, learning_rate=0.05,
-        max_depth=3, subsample=0.8, random_state=1
+    # Cross-validation (embarajado=False para no romper la temporalidad en cv)
+    cv = KFold(n_splits=n_splits, shuffle=False)
+    gbr = GradientBoostingRegressor(
+        n_estimators=600, learning_rate=0.05, max_depth=3,
+        subsample=0.8, random_state=1
     )
-
     score = np.mean(cross_val_score(
-        GBR2, X_train, y_train,
-        scoring='neg_mean_squared_error',
-        cv=crossvalidation, n_jobs=1
+        gbr, X_train, y_train, scoring='neg_mean_squared_error', cv=cv
     ))
-    print("Final model score:", score)
+    print("CV (neg MSE) media:", score)
 
-    # Entrenar
-    GBR2.fit(X_train, y_train)
-    predicciones = GBR2.predict(X_test)
-    #predicciones = GBR2.predict(X_train)
-    guardar_modelo(GBR2)
+    # Entrenamiento final
+    gbr.fit(X_train, y_train)
+    joblib.dump(gbr, MODEL_PATH)
+    print(f"Modelo guardado en {MODEL_PATH}")
 
-    # GRÁFICAS
-    plt.figure(figsize=(10, 6))
-    plt.plot(df_convertido['precipitacion_mm_mes'].values, label='Valores Reales', color='blue', alpha=0.6)
-    
-    plt.plot(
-        range(len(y_train), len(y_train) + len(y_test)),
-        y_test,
-        label='Reales (test)',
-        color='black',
-        alpha=0.6
-    )
+    # Evaluación y gráfico simple
+    y_pred_test = gbr.predict(X_test)
+    y_pred_test_disc = discretize_nino(y_pred_test)
 
-    plt.plot(range(len(y_train), len(y_train) + len(y_test)), predicciones, label='Predicciones', color='red', alpha=0.6)
-    #plt.plot(predicciones, label='Predicciones', color='red', alpha=0.6)
+    # Serie completa para ploteo: y_true (desde 12 en adelante) y overlay de test preds
+    t_full = season_anchor_datetime(df)        # eje X
+    y_true_full = df["Nino_next"].values      # -1,0,1 reales (shift -1)
 
-    titulo = 'Precipitaciones Real vs Predicha'
-    plt.title(titulo)
-    plt.xlabel('Índice de Muestra')
-    plt.ylabel('Precipitaciones (mm)')
-    plt.legend()
-    plt.savefig(f"Archivos/Graficas/{titulo.replace(' ', '_')}.png", dpi=600, bbox_inches="tight")
+    overlay = np.full_like(y_true_full, fill_value=np.nan, dtype='float64')
+    overlay[split:] = y_pred_test_disc
+
+    fig, ax = plt.subplots(figsize=(10,6))
+    ax.plot(t_full, y_true_full, color='black', label='True (all)', linewidth=1.2)
+    ax.axvspan(t_full.iloc[0], t_full.iloc[split-1], color='tab:blue', alpha=0.1, label='Train window')
+    ax.plot(t_full, overlay, color='red', marker='o', linewidth=1.8, label='Predictions (test)')
+    ax.set_title("ENSO Phase (Nino -1/0/1) – GBR")
+    ax.set_ylabel("Nino (-1, 0, 1)")
+    ax.set_xlabel("Fecha (trimestral)")
+    ax.legend()
+    plt.tight_layout()
     plt.show()
 
-    return GBR2
+    return gbr
 
+def predecir_futuro(path_csv: str, steps: int = 12):
+    """
+    Predice 'steps' trimestres hacia adelante recursivamente.
+    Features de entrada en cada paso: year, trimester y Nino del paso anterior (como pediste).
+    """
+    if not os.path.exists(MODEL_PATH):
+        raise FileNotFoundError("No se encontró el modelo entrenado. Ejecutá entrenar_modelo_phase primero.")
 
+    gbr = joblib.load(MODEL_PATH)
+    df = pd.read_csv(path_csv).sort_values(["year","trimester"]).reset_index(drop=True)
 
-# -------------------------------
-# MAIN
-# -------------------------------
-def main(clima_file, entradas_para_predecir = None, modelo = None):
-    if entradas_para_predecir is None:
-        head_cant = int(input("¿Cuántas filas usar para entrenar? (0 para todas): "))
-        if head_cant == 0:
-            head_cant = None
-        modelo = entrenar_y_devolver_modelo(clima_file, head_cant)
-    else:
-        # Cargar modelo guardado
-        modelo = joblib.load("model/modelo_gbm_precip.pkl")
+    # Partimos del último registro conocido
+    last_year     = int(df.iloc[-1]["year"])
+    last_trim     = int(df.iloc[-1]["trimester"])
+    last_nino     = float(df.iloc[-1]["Nino"])
 
-        df = limpiar_df(entradas_para_predecir)
-        df = separar_fecha(df)
-        df['precip_lag1'] = df['precipitacion_mm_mes'].shift(1)
-        df = df.dropna()
-        ultima_tupla = df.tail(1)
+    preds = []
+    for _ in range(steps):
+        # features: (year, trimester, Nino actual)
+        X = np.array([[last_year, last_trim, last_nino]], dtype=float)
+        y_hat = gbr.predict(X)[0]
+        y_hat_disc = float(np.clip(np.round(y_hat), -1, 1))  # discretizar a -1/0/1 para retroalimentar
 
-        predicciones = []
+        preds.append((last_year, last_trim, y_hat_disc))
 
-        for i in range(14):
-            prediccion = modelo.predict(ultima_tupla[['anio', 'mes', 'precip_lag1']])
-            nueva_fila = {
-                'anio': ultima_tupla['anio'].values[0] + (ultima_tupla['mes'].values[0] // 12),
-                'mes': (ultima_tupla['mes'].values[0] % 12) + 1,
-                'precipitacion_mm_mes': prediccion[0],
-                'precip_lag1': ultima_tupla['precipitacion_mm_mes'].values[0]
-            }
-            nueva_fila_df = pd.DataFrame([nueva_fila])
-            predicciones.append(prediccion[0])
-            ultima_tupla = nueva_fila_df
+        # avanzar calendario y actualizar "estado"
+        next_year, next_trim = avanzar_trimestre(last_year, last_trim)
+        last_year, last_trim, last_nino = next_year, next_trim, y_hat_disc
 
-        return predicciones
-    
+    # Devolvemos como DataFrame
+    return pd.DataFrame(preds, columns=["year", "trimester", "Nino_pred"])
 
+# ---------------- Main ----------------
 if __name__ == "__main__":
-    clima_file = f"Recuperacion_de_datos/Clima/clima_nasa_mensual_44_anios_de_Rosario.csv"
-    main(clima_file)
+    csv_path = "Recuperacion_de_datos/Clima/phase_trimestral.csv"  # cámbialo si lo tenés en otra carpeta
+    # Entrenar y graficar
+    entrenar_modelo_phase(csv_path)
+
+    # Predecir próximos 12 trimestres (opcional)
+    fut = predecir_futuro(csv_path, steps=12)
+    print(fut)
