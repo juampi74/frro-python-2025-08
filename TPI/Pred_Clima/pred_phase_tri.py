@@ -100,12 +100,13 @@ def train_phase_model(df: pd.DataFrame, epochs=60, lr=1e-3):
     return history
 
 # ---------------------- Forecasting -----------------
-def predict_next_steps(df: pd.DataFrame, steps=12):
+def predict_next_steps(steps=12):
     """
     Predice próximos `steps` trimestres usando la última ventana de 12.
     Avanza el calendario de trimestre en trimestre para construir sin/cos futuros.
     Devuelve dos arrays: clases (0,1,2) y valores mapeados (-1,0,1).
     """
+    df = pd.read_csv("Recuperacion_de_datos/Clima/phase_trimestral.csv")
     model = load_model(MODEL_PATH)
 
     df_feat = add_cyclical_trimester_features(df)
@@ -197,7 +198,7 @@ def demo_train_and_plot(csv_path="Recuperacion_de_datos/Clima/phase_trimestral.c
 if __name__ == "__main__":
     demo_train_and_plot()
 
-    primer, segundo = predict_next_steps(df=pd.read_csv("Recuperacion_de_datos/Clima/phase_trimestral.csv"), steps=12)
+    primer, segundo = predict_next_steps(steps=12)
 
     print("----------------------------------------------------------------------")
     print("Predicción próximos 12 trimestres (clase):", primer)

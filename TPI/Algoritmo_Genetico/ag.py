@@ -9,8 +9,14 @@ import pickle
 with open("model/cultivo_a_entero.pkl", "rb") as f:
     cultivo_a_entero = pickle.load(f)
 
+with open("model/depto_a_entero.pkl", "rb") as g:
+    depto_a_entero = pickle.load(g)
+
 from Red_neuronal.My_GBM import main as utilizar_GBM, limpiar_df
-from Pred_Clima.pred_cond_climaticas import main as predecir_datos_clima  
+#from Pred_Clima.pred_cond_climaticas import main as predecir_datos_clima  
+from Pred_Clima.pred_phase_tri import predict_next_steps
+from Red_neuronal.My_GBM import conversor_depto_a_entero
+from configuracion_ReglasNegocio import cultivos_inv, cultivos_ver
 
 # GENERAL
 '''
@@ -18,11 +24,10 @@ La idea es crear poblaciones con los mismos datos de suelo dependiendo del depar
 diferenciandose en la semilla utilizada y el área a cultivar por semilla.
 '''
 
-SEMILLAS = ['girasol', 'soja', 'maíz', 'trigo', 'sorgo', 'cebada', 'maní']
 
-def pred_toneladas(totalha, depto, lon, lat):
-    individuo = [totalha] * len(SEMILLAS) 
-    toneladas = red_neuronal(individuo, depto, lon, lat)
+def pred_toneladas(totalha, depto, lon, lat, semillas):
+    individuo = [totalha] * len(semillas) 
+    toneladas = red_neuronal(individuo, depto, lon, lat, semillas)
     return toneladas
 
 
@@ -48,23 +53,23 @@ def funcionObjetivo(x):
     return obj
     
 ## calcular FO MODIF (TARDA MENOS)
-def calculadorFuncionObjetivo(poblacion, toneladas, area): 
+def calculadorFuncionObjetivo(poblacion, toneladas, area, semillas): 
     objetivos = []
 
     for individuo in poblacion:
-        for idx, semilla in enumerate(SEMILLAS):
+        for idx, semilla in enumerate(semillas):
             cantidad_toneladas = ((individuo[idx]/area) * toneladas[idx])
             obj = funcionObjetivo(cantidad_toneladas)
         objetivos.append(obj)
     return objetivos
 
-def red_neuronal(individuo, depto, lon, lat):
+def red_neuronal(individuo, depto, lon, lat, semillas):
     # Uno con datos del suelo
     df_suelo = pd.read_csv("Recuperacion_de_datos/Suelos/suelo_promedio.csv")
     df_suelo = df_suelo[df_suelo['departamento_nombre'] == depto]
 
     # Uno con datos predecidos del clima
-    df_predicciones_clima = predecir_datos_clima(depto)
+    df_predicciones_clima = predict_next_steps(steps = 7)
 
     # Creo el dataframe final para pasar a la red neuronal
     df_final = pd.DataFrame()
@@ -81,15 +86,18 @@ def red_neuronal(individuo, depto, lon, lat):
             'superficie_sembrada_ha': float(area),
             **suelo_dict,
             **clima_dict,
-            'cultivo_nombre': int(cultivo_a_entero[SEMILLAS[idx]]),
+            'cultivo_nombre': int(cultivo_a_entero[semillas[idx]]),
             'anio': int(anio)
         }
         filas.append(fila)
 
     df_final = pd.DataFrame(filas)
 
-    cols = ['cultivo_nombre', 'anio', 'organic_carbon', 'ph', 'clay', 'silt', 'sand', 'phase' 'superficie_sembrada_ha']
+    cols = ['cultivo_nombre', 'anio', 'departamento_nombre', 'organic_carbon', 'ph', 'clay', 'silt', 'sand', 'phase',
+            'superficie_sembrada_ha']
     df_final = df_final[cols]
+
+    df_final = conversor_depto_a_entero(df_final, depto_a_entero)
 
     predicciones_toneladas = utilizar_GBM(df_final)
     return predicciones_toneladas
@@ -102,23 +110,6 @@ def calculadorFitness(objetivos):
         fit = fo / suma
         fitness.append(fit)
     return fitness
-
-# metodo correccion original
-def metodo_correccion(individuo, toneladas, area_ha):
-    cultivos = sum(1 for x in individuo if x != 0)
-    if cultivos > 2:
-        total = 0
-        for x in range(len(individuo)):
-            if individuo[x] < area_ha*0.05:
-                total = individuo[x]
-                individuo[x] = 0
-        individuo_modif = []
-        for i in range(len(individuo)):
-            valor = individuo[i]+(total/cultivos)
-            individuo_modif.append(valor)
-        return individuo_modif
-    else:
-        return individuo
         
 
 def calculadorEstadisticos(poblacion, objetivos):
@@ -205,16 +196,16 @@ def seleccionTorneo(poblacion, fitnessValores, cantidadIndividuos, cantidadCompe
 
 # CICLOS
 # Elitismo
-def ciclos_con_elitismo(depto, lat, lon, area_ha, ciclos, prob_crossover, prob_mutacion, cant_individuos, cant_genes, metodo_seleccion, cantidadElitismo, 
-                        correccion, cantidadCompetidores=None):
-    toneladas = pred_toneladas(area_ha, depto, lon, lat)
+def ciclos_con_elitismo(depto, lat, lon, area_ha, ciclos, prob_crossover, prob_mutacion, cant_individuos, cant_genes, metodo_seleccion, semillas, cantidadElitismo, 
+                        cantidadCompetidores=None):
+    toneladas = pred_toneladas(area_ha, depto, lon, lat, semillas)
     maximos=[]
     minimos=[]
     promedios=[]
     mejores=[]
     
     pob = generarPoblacion(cant_individuos, cant_genes, area_ha) #Poblacion inicial random
-    fo = calculadorFuncionObjetivo(pob, toneladas, area_ha)
+    fo = calculadorFuncionObjetivo(pob, toneladas, area_ha, semillas)
     fit = calculadorFitness(fo)
     rta = calculadorEstadisticos(pob, fo)
 
@@ -248,12 +239,8 @@ def ciclos_con_elitismo(depto, lat, lon, area_ha, ciclos, prob_crossover, prob_m
         pob_intermedia = mutacionSwap(pob_intermedia, prob_mutacion)
         
         pob = pob_intermedia + elitistas
-
-        if correccion:
-            index = fit.index(fit_ordenados[-1])
-            pob[index] = metodo_correccion(pob[index], toneladas, area_ha)
         
-        fo = calculadorFuncionObjetivo(pob, toneladas, area_ha)
+        fo = calculadorFuncionObjetivo(pob, toneladas, area_ha, semillas)
         fit = calculadorFitness(fo)
         rta = calculadorEstadisticos(pob, fo)
         #GUARDAR VALORES NECESARIOS PARA LA GRAFICA
@@ -292,15 +279,15 @@ def ciclos_con_elitismo(depto, lat, lon, area_ha, ciclos, prob_crossover, prob_m
 
 # Sin elitismo
 def ciclos_sin_elitismo(depto, lat, lon, area_ha, ciclos, prob_crossover, prob_mutacion, cantidadIndividuos, cant_genes, metodo_seleccion, 
-                        correccion, cantidadCompetidores=None):
-    toneladas = pred_toneladas(area_ha, depto, lon, lat)
+                        semillas, cantidadCompetidores=None):
+    toneladas = pred_toneladas(area_ha, depto, lon, lat, semillas)
     maximos=[]
     minimos=[]
     promedios=[]
     mejores=[]
     
     pob = generarPoblacion(cantidadIndividuos, cant_genes, area_ha)
-    fo = calculadorFuncionObjetivo(pob, toneladas, area_ha)
+    fo = calculadorFuncionObjetivo(pob, toneladas, area_ha, semillas)
     fit = calculadorFitness(fo)
     rta = calculadorEstadisticos(pob, fo)
     
@@ -321,15 +308,9 @@ def ciclos_sin_elitismo(depto, lat, lon, area_ha, ciclos, prob_crossover, prob_m
             if random.random() < prob_crossover :
                 hijo1, hijo2 = crossover1Punto(padre, madre, area_ha)
                 pob[i], pob[i+1] = hijo1, hijo2
-
-
-        if correccion:
-            fit_ordenados = sorted(fit, reverse=True)
-            index = fit.index(fit_ordenados[-1])
-            pob[index] = metodo_correccion(pob[index], toneladas, area_ha)
         
         pob = mutacionSwap(pob, prob_mutacion)
-        fo = calculadorFuncionObjetivo(pob, toneladas, area_ha)
+        fo = calculadorFuncionObjetivo(pob, toneladas, area_ha, semillas)
         fit = calculadorFitness(fo)
         rta = calculadorEstadisticos(pob, fo)
 
@@ -391,11 +372,11 @@ def generar_grafico(maximos, minimos, promedios, titulo):
     plt.savefig('Archivos/Graficas/' + titulo.replace(" ", "_") + '.png', dpi=600, bbox_inches="tight")
     plt.show()
 
-def grafico_terreno(cromosoma, titulo):
+def grafico_terreno(cromosoma, titulo, semillas):
     
     sizes = [area for area in cromosoma if area > 0]
     labels = [f"{semilla}\n{round(area, 2)} ha" 
-              for semilla, area in zip(SEMILLAS, cromosoma) if area > 0]
+              for semilla, area in zip(semillas, cromosoma) if area > 0]
     colors = plt.cm.Set3(range(len(sizes)))  
 
     plt.figure(figsize=(8, 6))
@@ -440,36 +421,41 @@ def main(depto, lat, lon, area_ha):
         else:
             print("Por favor, ingrese '1' para sí o '0' para no.")
     while True:
-        correccion = input("\n¿Quiere usar metodo correctivo? <metodo correctivo: 1-si 0-no> ")
-        if correccion in ['0', '1']:
-            correccion = int(correccion)
+        tipo_semilla = input("\n¿Quiere realizar el análisis para semillas de invierno o de verano? <invierno: 1-si 0-no> ")
+        if tipo_semilla in ['0', '1']:
+            tipo_semilla = int(tipo_semilla)
             break
         else:
             print("Por favor, ingrese '1' para sí o '0' para no.")
+
+    if tipo_semilla == 1:
+        semillas = cultivos_inv
+    elif tipo_semilla == 0:
+        semillas = cultivos_ver
     
     
     if elitismo == 1:
         maximosPorCiclo, minimosPorCiclo, promediosPorCiclo, mejores = ciclos_con_elitismo(depto, lat, lon, area_ha, ciclos, probCrossover, probMutacion, 
                                                                                            cantidadIndividuos, cantidadGenes, 
-                                                                                           seleccion, 
-                                                                                           cantidadElitismo, correccion, cantidadCompetidores)
+                                                                                           seleccion, semillas,
+                                                                                           cantidadElitismo, cantidadCompetidores)
         if seleccion == 'r':
             titulo = 'Seleccion RULETA ELITISTA - de '+ str(ciclos) + ' ciclos'
         else:
             titulo = 'Seleccion TORNEO ELITISTA - de '+ str(ciclos) + ' ciclos'
         generar_grafico(maximosPorCiclo, minimosPorCiclo, promediosPorCiclo, titulo)
-        grafico_terreno(mejores[-1], "Grafico Campo")
+        grafico_terreno(mejores[-1], "Grafico Campo", semillas)
         #crear_tabla(maximosPorCiclo, minimosPorCiclo, promediosPorCiclo, mejores, seleccion, elitismo)
     else:
         maximosPorCiclo, minimosPorCiclo, promediosPorCiclo, mejores = ciclos_sin_elitismo(depto, lat, lon, area_ha, ciclos, probCrossover, probMutacion, 
                                                                                            cantidadIndividuos, cantidadGenes, 
-                                                                                           seleccion, correccion, cantidadCompetidores)
+                                                                                           seleccion, semillas, cantidadCompetidores)
         if seleccion == 'r':
             titulo = 'Seleccion RULETA - de '+ str(ciclos) + ' ciclos'
         else:
             titulo = 'Seleccion TORNEO - de '+ str(ciclos) + ' ciclos'
         generar_grafico(maximosPorCiclo, minimosPorCiclo, promediosPorCiclo, titulo)
-        grafico_terreno(mejores[-1], "Grafico Campo")
+        grafico_terreno(mejores[-1], "Grafico Campo", semillas)
         #crear_tabla(maximosPorCiclo, minimosPorCiclo, promediosPorCiclo, mejores, seleccion, elitismo)
 
     return

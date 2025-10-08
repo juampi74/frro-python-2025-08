@@ -139,8 +139,7 @@ def entrenar_y_devolver_modelo(head_cant = 0):
     plt.plot(df_convertido['produccion_tn'].values, label='Valores Reales', color='blue', alpha=0.6)
 
     # Línea roja: predicciones, alineadas con el 20% final
-    plt.plot(range(len(y_train), len(y_train) + len(y_test)), predicciones, 
-            label='Predicciones', color='red', alpha=0.6)
+    plt.plot(range(len(y_train), len(y_train) + len(y_test)), predicciones, label='Predicciones', color='red', alpha=0.6)
 
 
     titulo = 'Producción (tn)'
