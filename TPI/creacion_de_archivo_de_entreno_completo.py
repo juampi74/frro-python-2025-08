@@ -45,8 +45,18 @@ def agregar_clima_por_departamento(df_suelo_semillas,
     df_clima = pd.read_csv('Recuperacion_de_datos/Clima/phase_trimestral.csv')
 
     # Filtrar cultivos contemplados
-    cultivos_validos = cultivos_inv + cultivos_ver
-    df = df[df['cultivo_nombre'].isin(cultivos_validos)].copy()
+    # Construí el set de cultivos válidos en minúscula
+    cultivos_validos = {s.strip().casefold() for s in (cultivos_inv + cultivos_ver)}
+
+    # Filtrá el DF normalizando la columna a minúscula
+    mask = (
+        df['cultivo_nombre']
+        .astype(str)
+        .str.strip()
+        .str.casefold()
+        .isin(cultivos_validos)
+    )
+    df = df[mask].copy()
 
     # Ancla por tipo de cultivo
     is_ver = df['cultivo_nombre'].isin(cultivos_ver)
