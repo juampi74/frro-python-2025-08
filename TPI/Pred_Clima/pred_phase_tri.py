@@ -141,7 +141,8 @@ def predict_next_steps(steps=12):
 
         last_trim, last_year = next_trim, next_year
 
-    return np.array(preds_class), np.array(preds_value)
+    #return np.array(preds_class), np.array(preds_value)
+    return preds_class, preds_value
 
 # ---------------------- Plot helper -----------------
 def plot_full_timeline_clean(period, y_true_full, n_train, test_pred, title="Phase ENSO Trimestral"):

@@ -69,7 +69,7 @@ def red_neuronal(individuo, depto, lon, lat, semillas):
     df_suelo = df_suelo[df_suelo['departamento_nombre'] == depto]
 
     # Uno con datos predecidos del clima
-    df_predicciones_clima = predict_next_steps(steps = 7)
+    _, lista_predicciones_clima = predict_next_steps(steps = 7)
 
     # Creo el dataframe final para pasar a la red neuronal
     df_final = pd.DataFrame()
@@ -80,24 +80,35 @@ def red_neuronal(individuo, depto, lon, lat, semillas):
 
         # Convertir columnas de suelo y clima a float
         suelo_dict = {k: (float(v) if k != 'departamento_nombre' and k != 'coords' else v) for k, v in df_suelo.iloc[0].to_dict().items()}
-        clima_dict = {k: float(v) for k, v in df_predicciones_clima.iloc[0].to_dict().items()}
+        lags = {f"Nino_lag{i+1}": v for i, v in enumerate(lista_predicciones_clima[:7])}
+
+        def expand_list_as_cols(vals, k=7, pad=0, prefix="Nino_lag"):
+            vals = list(vals)
+            if len(vals) < k: 
+                vals = vals + [pad] * (k - len(vals))
+            else:              
+                vals = vals[:k]
+            return {f"{prefix}{i+1}": vals[i] for i in range(k)}
+
+        lags = expand_list_as_cols(lista_predicciones_clima, k=7, pad=0)
 
         fila = {
             'superficie_sembrada_ha': float(area),
             **suelo_dict,
-            **clima_dict,
+            **lags,
             'cultivo_nombre': int(cultivo_a_entero[semillas[idx]]),
             'anio': int(anio)
         }
         filas.append(fila)
 
     df_final = pd.DataFrame(filas)
+    df_columna_depto_entero = conversor_depto_a_entero(df_final, depto_a_entero)
 
-    cols = ['cultivo_nombre', 'anio', 'departamento_nombre', 'organic_carbon', 'ph', 'clay', 'silt', 'sand', 'phase',
-            'superficie_sembrada_ha']
+    df_final['departamento_nombre'] = (df_columna_depto_entero['departamento_nombre'].astype('int32'))   # Acá está el problema.
+
+    cols = ['cultivo_nombre', 'anio', 'departamento_nombre', 'organic_carbon', 'ph', 'clay', 'silt', 'sand', 'Nino_lag1', 
+            'Nino_lag2', 'Nino_lag3', 'Nino_lag4', 'Nino_lag5', 'Nino_lag6', 'Nino_lag7', 'superficie_sembrada_ha']
     df_final = df_final[cols]
-
-    df_final = conversor_depto_a_entero(df_final, depto_a_entero)
 
     predicciones_toneladas = utilizar_GBM(df_final)
     return predicciones_toneladas
