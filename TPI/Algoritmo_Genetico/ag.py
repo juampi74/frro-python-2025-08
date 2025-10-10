@@ -354,30 +354,31 @@ def ciclos_sin_elitismo(depto, lat, lon, area_ha, ciclos, prob_crossover, prob_m
         promedios.append(rta[2])
         mejores.append(rta[3])
 
-        suma = [0] * 7
-        total = 0.0
+        n = len(semillas)
+
+        # 1) Validación (opcional, pero MUY útil)
+        for idx, x in enumerate(pob):
+            if len(x) != n:
+                raise ValueError(f"Individuo {idx} tiene {len(x)} genes, pero semillas tiene {n}.")
+
+        # 2) Suma automática por posición
+        suma = [0.0] * n
         for x in pob:
-            suma[0] += x[0]
-            suma[1] += x[1]
-            suma[2] += x[2]
-            suma[3] += x[3]
-            suma[4] += x[4]
-            suma[5] += x[5]
-            suma[6] += x[6]
+            for i, v in enumerate(x):
+                suma[i] += float(v)
 
-            total = suma[0] + suma[1] + suma[2] + suma[3] + suma[4] + suma[5] + suma[6]
+        total_poblacion = sum(suma)
 
+        # 3) “Mejor” individuo de la iteración (asumiendo que ya lo tenés)
+        mejor = mejores[-1]
+        total_individuo = sum(mejor[:n])
+
+        # 4) Print dinámico
         print(f"------------------ ITERACION: {j+1} ----------------------------")
-        print(f"\n GIRASOL: {mejores[-1][0]} || total: {suma[0]}")
-        print(f"\n SOJA: {mejores[-1][1]} || total: {suma[1]}")
-        print(f"\n MAIZ: {mejores[-1][2]} || total: {suma[2]}")
-        print(f"\n TRIGO: {mejores[-1][3]} || total: {suma[3]}")
-        print(f"\n SORGO: {mejores[-1][4]} || total: {suma[4]}")
-        print(f"\n CEBADA: {mejores[-1][5]} || total: {suma[5]}")
-        print(f"\n MANI: {mejores[-1][6]} || total: {suma[6]}")
-        total_ind = mejores[-1][0] + mejores[-1][1] + mejores[-1][2] + mejores[-1][3] + mejores[-1][4] + mejores[-1][5] + mejores[-1][6]
-        print(f"\n TOTAL DE HA POBLACIÓN: {total} || TOTAL DE HA INDIVIDUO: {total_ind}")
-        print("----------------------------------------------")
+        for nombre, val_ind, val_tot in zip(semillas, mejor[:n], suma):
+            print(f"\n {nombre.upper()}: {val_ind:.2f} || total: {val_tot:.2f}")
+        print(f"\n TOTAL DE HA POBLACIÓN: {total_poblacion:.2f} || TOTAL DE HA INDIVIDUO: {total_individuo:.2f}")
+        print("---------------------------------------------------------------")
 
     return maximos, minimos, promedios, mejores
 

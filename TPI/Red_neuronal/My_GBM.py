@@ -102,7 +102,8 @@ def entrenar_y_devolver_modelo(head_cant = 0):
     if decition.lower() == 's':
         print("Iniciando hyperparameter tuning...") 
         GBR = GradientBoostingRegressor()
-        search_grid = {'n_estimators':[500, 1000, 2000], 'learning_rate':[.001, 0.01, .1], 'max_depth':[1, 2, 4], 'subsample':[.5, .75, 1], 'random_state':[1]}
+        search_grid = {'n_estimators':[500, 1000, 2000], 'learning_rate':[.001, 0.01, .1], 'max_depth':[1, 2, 4], 
+                       'subsample':[.5, .75, 1], 'random_state':[1]}
         #search_grid = {'n_estimators':[500, 1000], 'learning_rate':[.001, 0.05], 'max_depth':[1, 3], 'subsample':[.5, 1], 'random_state':[1]}
         search = GridSearchCV(estimator = GBR, param_grid = search_grid,
                             scoring = 'neg_mean_squared_error', n_jobs = 1, cv = crossvalidation)
