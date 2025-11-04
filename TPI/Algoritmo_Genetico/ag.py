@@ -125,7 +125,7 @@ def red_neuronal(individuo, depto, lon, lat, semillas):
 
     # Reemplazo la columna en df_final (alineando por posición)
     df_final = df_final.reset_index(drop=True).copy()
-    serie     = serie.reset_index(drop=True).astype('int32')
+    serie = serie.reset_index(drop=True).astype('int32')
     df_final['departamento_nombre'] = serie.to_numpy()
     # --------------------------------------------------------------------------
 
