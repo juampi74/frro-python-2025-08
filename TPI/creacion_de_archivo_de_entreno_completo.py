@@ -201,6 +201,20 @@ def main():
     ]
     df_final = df_final[column_order]
 
+    # --- Eliminar filas con datos faltantes o infinitos ---
+    # 1) Pasar ±inf a NaN (scikit-learn también los rechaza)
+    df_final = df_final.replace([np.inf, -np.inf], np.nan)
+
+    # 2) Marcar filas con al menos un NaN
+    mask_nan = df_final.isna().any(axis=1)
+
+    # 3) (Opcional) ver cuántas vas a eliminar
+    print("Filas eliminadas por NaN/inf:", int(mask_nan.sum()))
+
+    # 4) Filtrar y resetear índice
+    df_final = df_final[~mask_nan].reset_index(drop=True)
+    # --- fin limpieza ---
+
     df_final.to_csv('Archivos/df_semillas_suelo_phases.csv', index=False)
     print("Archivo guardado exitosamente!")
 
